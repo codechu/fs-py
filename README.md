@@ -9,6 +9,11 @@
    └──────────────────────────────────────────────────┘
 ```
 
+[![PyPI](https://img.shields.io/pypi/v/codechu-fs.svg)](https://pypi.org/project/codechu-fs/)
+[![Python](https://img.shields.io/pypi/pyversions/codechu-fs.svg)](https://pypi.org/project/codechu-fs/)
+[![CI](https://github.com/codechu/fs-py/actions/workflows/ci.yml/badge.svg)](https://github.com/codechu/fs-py/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > *Filesystem primitives for tools that must not lose data.*
 
 # codechu-fs
@@ -99,6 +104,32 @@ pytest -q
 
 - [API reference](docs/API.md) — every public symbol, signatures, edge cases
 - [Recipes](docs/RECIPES.md) — five idiomatic patterns for CLIs and GUIs
+
+## Codechu family
+
+Companion libraries from the Codechu Python ecosystem:
+
+| Library | Purpose |
+|---------|---------|
+| [codechu-fmt](https://pypi.org/project/codechu-fmt/) | Human-readable formatting — sizes, durations, rates, percent |
+| [codechu-meter](https://pypi.org/project/codechu-meter/) | Timing primitives — Stopwatch, ETA, percentile, histogram |
+| [codechu-spark](https://pypi.org/project/codechu-spark/) | Unicode sparklines, mini bar charts, heatmaps |
+| [codechu-cli](https://pypi.org/project/codechu-cli/) | CLI primitives — colors, progress, spinners, prompts, table |
+| [codechu-events](https://pypi.org/project/codechu-events/) | Thread-safe multi-channel pub/sub bus with replay |
+| [codechu-xdg](https://pypi.org/project/codechu-xdg/) | XDG Base Directory helpers, vendor-namespaced |
+| [codechu-treeviz](https://pypi.org/project/codechu-treeviz/) | Tree visualization — treemap, sunburst, icicle, flame |
+| [codechu-term](https://pypi.org/project/codechu-term/) | Terminal capability detection, alt buffer, raw mode |
+| [codechu-color](https://pypi.org/project/codechu-color/) | Color palettes, WCAG contrast, color-blind variants |
+| [codechu-treedata](https://pypi.org/project/codechu-treedata/) | N-ary tree data structures and algorithms |
+| [codechu-log](https://pypi.org/project/codechu-log/) | Structured logging — context, JSON, rotation, redaction |
+| [codechu-i18n](https://pypi.org/project/codechu-i18n/) | Internationalization — locale, plural rules, RTL |
+| [codechu-ipc](https://pypi.org/project/codechu-ipc/) | Local IPC — Unix socket, FIFO, JSON-line protocol |
+| [codechu-config](https://pypi.org/project/codechu-config/) | Schema-driven config — atomic save, migrations |
+
+## Credits
+
+- XDG Trash Specification by freedesktop.org
+- Atomic write pattern follows POSIX rename(2) guarantees
 
 ## License
 
