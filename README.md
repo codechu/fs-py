@@ -1,12 +1,15 @@
 ```text
-   ┌──────────────────────────────────────────────────┐
-   │  c o d e c h u — f s                             │
-   │   .                                              │
-   │   ├── atomic_write()    safe.tmp -> fsync -> mv  │
-   │   ├── move_to_trash()   ~/.local/share/Trash/    │
-   │   ├── walk()            cancellable + loop-safe  │
-   │   └── mountpoint()      /proc/mounts aware       │
-   └──────────────────────────────────────────────────┘
+━━━━━━━━━━━━ c o d e c h u  ·  f s ━━━━━━━━━━━━
+
+   atomic_write()      safe.tmp → fsync → rename
+   move_to_trash()     ~/.local/share/Trash/
+   walk()              cancellable + loop-safe
+   recursive_size()    cancellable + skip-unreadable
+   mountpoint()        /proc/mounts aware
+   is_safe_path()      traversal-guard for user input
+   temp_dir()          context-managed scratch space
+
+━━━━━━━━━ data preserved, errors visible. ━━━━━━━━━
 ```
 
 [![PyPI](https://img.shields.io/pypi/v/codechu-fs.svg)](https://pypi.org/project/codechu-fs/)
