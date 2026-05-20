@@ -18,26 +18,11 @@
 
 # codechu-fs
 
-Stdlib-only filesystem helpers — atomic writes, XDG trash, cancellable
-walks, mount discovery — extracted from the
-[Disk Cleaner](https://github.com/codechu/disk-cleaner) toolchain.
-Zero third-party dependencies. Python 3.10+.
-
-## What it gives you
-
-- **`atomic_write`** — tempfile in the same dir, `fsync`, then `rename`.
-  Preserves existing permissions. Either bytes or text (with encoding).
-- **`move_to_trash`** — freedesktop XDG Trash Specification compliant.
-  Honors `XDG_DATA_HOME`, writes a `.trashinfo`, resolves name
-  collisions.
-- **`walk`** — `os.walk` with three things `os.walk` is missing: a
-  `cancel` Event for cooperative shutdown, an `on_error` callback (no
-  silent swallow), and symlink-loop detection when following links.
-- **`recursive_size`** — sum of bytes under a directory, cancellable.
-- **`mountpoint`** — the mount that contains a path, parsed from
-  `/proc/mounts` on Linux with a `st_dev` fallback elsewhere.
-- **`is_safe_path`** — path-traversal guard for user-supplied inputs.
-- **`temp_dir`** — context-managed temp directory, auto-removed.
+Stdlib-only filesystem helpers that turn the easy-to-get-wrong cases
+(half-written config, swallowed walk errors, runaway recursive size)
+into one-liners. Atomic writes that fsync. Walks that cancel. Trash
+that follows the freedesktop spec. Mountpoints that read
+`/proc/mounts` properly.
 
 ## Install
 
@@ -45,92 +30,78 @@ Zero third-party dependencies. Python 3.10+.
 pip install codechu-fs
 ```
 
-## Quick examples
+Python 3.10+. Zero third-party dependencies.
+
+## Quick example
 
 ```python
 from pathlib import Path
 from threading import Event
-from codechu_fs import (
-    atomic_write, move_to_trash, walk, recursive_size,
-    mountpoint, is_safe_path, temp_dir,
-)
+from codechu_fs import atomic_write, move_to_trash, walk, recursive_size, temp_dir
 
-# Durable write — never leaves a half-written file even if you crash mid-write.
+# Crash-safe: tempfile in same dir → fsync → rename. Permissions preserved.
 atomic_write("/etc/myapp/config.json", b'{"k":1}\n')
-atomic_write("notes.txt", "hello\n", encoding="utf-8")
 
-# Send a file to the desktop trash (recoverable from the file manager).
+# XDG Trash Specification compliant — recoverable from the file manager.
 trashed = move_to_trash("/tmp/junk.log")
-print("now at:", trashed)
 
-# Cancellable walk — stop instantly when the user clicks Cancel.
+# Cancellable walk — GUI cancel buttons actually stop the scan.
 cancel = Event()
-for dirpath, dirnames, filenames in walk("/var/log", cancel=cancel):
-    if some_condition():
+for dirpath, dirs, files in walk("/var/log", cancel=cancel):
+    if user_clicked_cancel():
         cancel.set()
 
-# Total size of a directory tree (skips unreadable files).
+# Cancellable size, mountpoint, scratch dir
 print(recursive_size(Path.home() / "Downloads"))
-
-# What partition is this on?
-print(mountpoint("/var/log/syslog"))   # → /var, or / on most systems
-
-# Safe extraction of an untrusted filename.
-if is_safe_path(user_input, base="/srv/uploads"):
-    ...
-
-# Scratch space that always cleans up.
 with temp_dir(prefix="myapp-") as scratch:
-    (scratch / "work.bin").write_bytes(b"...")
+    (scratch / "work.bin").write_bytes(b"…")
 ```
 
-## Design
+## What you get
 
-- **Pure stdlib.** Zero third-party dependencies. Seven small modules.
-- **Defensive.** `walk` never swallows errors silently. `atomic_write`
-  fsyncs before rename. `move_to_trash` rolls back its `.trashinfo` on
-  failure.
-- **Cancellable.** Every traversal accepts a `threading.Event`. Long
-  scans on slow disks remain responsive in GUI apps.
+- **`atomic_write`** — tempfile in the same dir, `fsync`, then
+  `rename`. Preserves existing permissions. Bytes or text.
+- **`move_to_trash`** — freedesktop XDG Trash Specification
+  compliant. Honors `XDG_DATA_HOME`, writes `.trashinfo`, resolves
+  name collisions.
+- **`walk`** — `os.walk` plus a `cancel` Event, an `on_error`
+  callback (no silent swallow), and symlink-loop detection.
+- **`recursive_size`** — sum of bytes under a directory,
+  cancellable, skips unreadable files.
+- **`mountpoint`** — the mount that contains a path, parsed from
+  `/proc/mounts` on Linux with a `st_dev` fallback elsewhere.
+- **`is_safe_path`** — path-traversal guard for user-supplied
+  inputs.
+- **`temp_dir`** — context-managed temp directory, auto-removed.
 
-## Tests
+## Read more
 
-```bash
-pip install -e ".[dev]"
-pytest -q
-```
+- [API reference](docs/API.md) — every public symbol with full
+  signatures and edge-case tables.
+- [Recipes](docs/RECIPES.md) — atomic save with backup, cancellable
+  scan with progress, post-crash trash recovery, mount-aware free
+  space, traversal sandboxing.
+- [Changelog](CHANGELOG.md)
 
-## Documentation
-
-- [API reference](docs/API.md) — every public symbol, signatures, edge cases
-- [Recipes](docs/RECIPES.md) — five idiomatic patterns for CLIs and GUIs
-
-## Codechu family
-
-Companion libraries from the Codechu Python ecosystem:
+## Family
 
 | Library | Purpose |
 |---------|---------|
-| [codechu-fmt](https://pypi.org/project/codechu-fmt/) | Human-readable formatting — sizes, durations, rates, percent |
-| [codechu-meter](https://pypi.org/project/codechu-meter/) | Timing primitives — Stopwatch, ETA, percentile, histogram |
-| [codechu-spark](https://pypi.org/project/codechu-spark/) | Unicode sparklines, mini bar charts, heatmaps |
-| [codechu-cli](https://pypi.org/project/codechu-cli/) | CLI primitives — colors, progress, spinners, prompts, table |
-| [codechu-events](https://pypi.org/project/codechu-events/) | Thread-safe multi-channel pub/sub bus with replay |
 | [codechu-xdg](https://pypi.org/project/codechu-xdg/) | XDG Base Directory helpers, vendor-namespaced |
-| [codechu-treeviz](https://pypi.org/project/codechu-treeviz/) | Tree visualization — treemap, sunburst, icicle, flame |
-| [codechu-term](https://pypi.org/project/codechu-term/) | Terminal capability detection, alt buffer, raw mode |
-| [codechu-color](https://pypi.org/project/codechu-color/) | Color palettes, WCAG contrast, color-blind variants |
-| [codechu-treedata](https://pypi.org/project/codechu-treedata/) | N-ary tree data structures and algorithms |
-| [codechu-log](https://pypi.org/project/codechu-log/) | Structured logging — context, JSON, rotation, redaction |
-| [codechu-i18n](https://pypi.org/project/codechu-i18n/) | Internationalization — locale, plural rules, RTL |
-| [codechu-ipc](https://pypi.org/project/codechu-ipc/) | Local IPC — Unix socket, FIFO, JSON-line protocol |
 | [codechu-config](https://pypi.org/project/codechu-config/) | Schema-driven config — atomic save, migrations |
+| [codechu-fmt](https://pypi.org/project/codechu-fmt/) | Human-readable sizes, durations, rates |
+| [codechu-treeviz](https://pypi.org/project/codechu-treeviz/) | Treemap + sunburst layouts |
+| [codechu-events](https://pypi.org/project/codechu-events/) | Thread-safe multi-channel pub/sub bus |
+
+Full ecosystem: [github.com/codechu](https://github.com/codechu).
 
 ## Credits
 
-- XDG Trash Specification by freedesktop.org
-- Atomic write pattern follows POSIX rename(2) guarantees
+- XDG Trash Specification by freedesktop.org.
+- Atomic write pattern follows POSIX `rename(2)` guarantees.
 
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+Part of [Codechu](https://github.com/codechu).
